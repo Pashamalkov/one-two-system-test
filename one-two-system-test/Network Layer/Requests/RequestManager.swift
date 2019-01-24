@@ -64,70 +64,82 @@ class RequestManager {
     public required init(host: String) {
         self.host = host
     }
+    
+    let almgr : Alamofire.SessionManager = {
+        // FIXME: REMOVE BEFORE RELEASE
+        // Also remove NSAllowsArbitraryLoads: YES in Info.plist
+        // Create the server trust policies
+        let serverTrustPolicies: [String: ServerTrustPolicy] = [
+            "81.195.151.70:8000": .disableEvaluation
+        ]
+        // Create custom manager
+        let configuration = URLSessionConfiguration.default
+        configuration.httpAdditionalHeaders = Alamofire.SessionManager.defaultHTTPHeaders
+        let man = Alamofire.SessionManager(
+            configuration: URLSessionConfiguration.default,
+            serverTrustPolicyManager: ServerTrustPolicyManager(policies: serverTrustPolicies)
+        )
+        return man
+    }()
 }
 
-//// MARK: - RequestManagerCodable
-//extension RequestManager: RequestManagerCodable {
-//    func makeGetRequest<Result>(_ path: String, keyPath: String?, parameters: [String: Any]?,
-//                                completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
-//        return makeRequest(.get, path: path, keyPath: keyPath, parameters: parameters, completion: completion)
-//    }
-//
-//    func makePostRequest<Result>(_ path: String, keyPath: String?, parameters: [String: Any]?,
-//                                 completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
-//        return makeRequest(.post, path: path, keyPath: keyPath, parameters: parameters, completion: completion)
-//    }
-//
-//    func makeDeleteRequest<Result>(_ path: String, keyPath: String?, parameters: [String: Any]?,
-//                                   completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
-//        return makeRequest(.delete, path: path, keyPath: keyPath, parameters: parameters, completion: completion)
-//    }
-//
-//    @discardableResult
-//    func makeRequest<Result>(_ method: HTTPMethod, path: String, keyPath: String?,
-//                             parameters: [String: Any]?,
-//                             completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
-//
-//        var httpHeaders = applicationHeaders()
-//        httpHeaders["Content-Type"] = "application/json"
-//        let encoding: ParameterEncoding
-//        switch method {
-//        case .get:
-//            encoding = URLEncoding.default
-//        default:
-//            encoding = JSONEncoding.default
-//        }
-//
-//        let decoder = JSONDecoder()
-//        decoder.dateDecodingStrategy = .secondsSince1970
-//
-//
-//        return Alamofire.request("\(host)\(path)", method: method, parameters: getConfiguredRequestParameters(parameters), encoding: encoding, headers: httpHeaders).responseDecodableObject(keyPath: keyPath, decoder: decoder) { (response: DataResponse<ServerResponse<Result>>) in
-//            self.networkActivityIndicatorManager.removeActivity()
-//
-//            if let value = response.result.value {
-//                if value.success {
-//                    if let data = value.data {
-//                        completion?(CodableRequestResult.success(data))
-//                    } else {
-//                        completion?(CodableRequestResult.failure(CommonError.wrongJSON))
-//                    }
-//                } else {
-//                    DDLogWarn("Request return an error for path: \(self.host)\(path)")
-//                    let error = value.error ?? ServerError.unknownError
-//                    self.retryRequestAfterHandleIncludedError(error, retryBlock: {
-//                        self.makeRequest(method, path: path, keyPath: keyPath, parameters: parameters, completion: completion)
-//                    }, failureBlock: { error in
-//                        completion?(CodableRequestResult.failure(error))
-//                    })
-//                }
-//            } else {
-//                completion?(CodableRequestResult.failure(response.result.error!))
-//            }
-//        }
-//    }
 
-//}
+extension RequestManager: RequestManagerCodable {
+    func makeGetRequest<Result>(_ path: String, keyPath: String?, parameters: [String: Any]?,
+                                completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
+        return makeRequest(.get, path: path, keyPath: keyPath, parameters: parameters, completion: completion)
+    }
+    
+    func makePostRequest<Result>(_ path: String, keyPath: String?, parameters: [String: Any]?,
+                                 completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
+        return makeRequest(.post, path: path, keyPath: keyPath, parameters: parameters, completion: completion)
+    }
+    
+    func makeDeleteRequest<Result>(_ path: String, keyPath: String?, parameters: [String: Any]?,
+                                   completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
+        return makeRequest(.delete, path: path, keyPath: keyPath, parameters: parameters, completion: completion)
+    }
+    
+    @discardableResult
+    func makeRequest<Result>(_ method: HTTPMethod, path: String, keyPath: String?,
+                             parameters: [String: Any]?,
+                             completion: ((CodableRequestResult<Result>) -> ())?) -> Alamofire.Request? {
+        
+        var httpHeaders = applicationHeaders()
+        httpHeaders["Content-Type"] = "application/json"
+        let encoding: ParameterEncoding
+        switch method {
+        case .get:
+            encoding = URLEncoding.default
+        default:
+            encoding = JSONEncoding.default
+        }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        
+        let requestPath = "\(host)\(path)/"
+        let request = almgr.request(
+            requestPath,
+            method: method,
+            parameters: getConfiguredRequestParameters(parameters),
+            encoding: encoding,
+            headers: httpHeaders)
+        
+        return request.responseDecodableObject(keyPath: keyPath, decoder: decoder) { (response: DataResponse<Result>) in
+            //            self.networkActivityIndicatorManager.removeActivity()
+            
+            switch response.result {
+            case let .success(value):
+                completion?(CodableRequestResult.success(value))
+            case let .failure(error):
+                //                Logger.log(error: error, description: "Request \(requestPath) finished with error")
+                completion?(CodableRequestResult.failure(error))
+            }
+        }
+        
+    }
+}
 
 // MARK: - RequestManagerProtocol
 extension RequestManager {
@@ -220,11 +232,7 @@ extension RequestManager {
             response in
             if let jsonDictionary = response.result.value {
                 let json = JSON(jsonDictionary)
-                if json["status"].string == "ok" {
-                     completedBlock(FetchRequestResult.success(json["result"]))
-                } else {
-                    completedBlock(FetchRequestResult.failure(response.result.error!))
-                }
+                completedBlock(FetchRequestResult.success(json))
             } else {
                 completedBlock(FetchRequestResult.failure(response.result.error!))
             }
@@ -233,6 +241,7 @@ extension RequestManager {
     
     func getConfiguredRequestParameters(_ parameters: [String: Any]?) -> [String: Any] {
         var finalParameters: [String: Any] = parameters ?? [:]
+        finalParameters["dir_id"] = "124472"
 //        finalParameters["application"] = versionParameters // set application version parameters
 //        if let userToken = loginManager?.loginStorage.token {
 //            finalParameters["token"] = userToken // set user token

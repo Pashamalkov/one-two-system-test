@@ -21,7 +21,7 @@ class NavigationControllerRouter: NavigationRouterProtocol {
     
     required init(viewControllerFactory: ViewControllerFactory) {
         self.viewControllerFactory = viewControllerFactory
-        navigationController = UINavigationController.init(rootViewController: viewControllerFactory.configureViewControllerWithType(.templateListViewController, navigationRouter: self))
+        navigationController = UINavigationController(rootViewController: viewControllerFactory.configureViewControllerWithType(.inputData, navigationRouter: self))
         navigationController.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         navigationController.navigationBar.shadowImage = UIImage()
         navigationController.navigationBar.isTranslucent = true

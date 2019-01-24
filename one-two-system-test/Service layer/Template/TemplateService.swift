@@ -4,31 +4,38 @@
 
 import Foundation
 
-protocol TemplateServiceProtocol: ServiceProtocol {
-    func getTemplate(_ completion: (()->())?)
+protocol MainServiceProtocol: ServiceProtocol {
+    
+    //POST /get_project_ik
+    func getFullData(_ completion: ((InputDataModel?, Error?) -> Void)?)
 }
 
-class TemplateService: TemplateServiceProtocol {
+class MainService: MainServiceProtocol {
     var requestManager: RequestManager
-    
-    var templateParser = TemplateParser()
     
     init(requestManager: RequestManager) {
         self.requestManager = requestManager
     }
     
-    func getTemplate(_ completion: (()->())?) {
+    func getFullData(_ completion: ((InputDataModel?, Error?) -> Void)?) {
         
-        _ = requestManager.makeGetRequest("", parameters: nil, completedBlock: { [weak self] in
-            guard let strongSelf = self else { return }
-            switch $0 {
-            case .success(let json):
-//                completion?(strongSelf.templateParser.parseTemplate( json["data"]), nil)
-                break
+        requestManager.makeGetRequest("get_project_ik", keyPath: nil, parameters: nil) { (result: CodableRequestResult<InputDataModel>) in
+            switch result {
+            case .success(let fullProject):
+                completion?(fullProject, nil)
             case .failure(let error):
-//                completion?([], error)
-                break
+                completion?(nil, error)
             }
-        })
+        }
+        
+//        requestManager.makePostRequest("get_project_ik", keyPath: nil, parameters: nil) { (CodableRequestResult<InputDataModel>) in
+////            guard let strongSelf = self else { return }
+//            switch result {
+//            case .success(let certificate):
+//                completion?(certificate, nil)
+//            case .failure(let error):
+//                completion?([], error)
+//            }
+//        }
     }
 }
