@@ -12,6 +12,17 @@ final class InputDataViewController: UIViewController, NavigationItemConfigurati
     private let tableView = UITableView()
     private let appointButton = AppointButton()
     
+    private let okContentView: UIView = {
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 48 + 16 * 2))
+        view.backgroundColor = .clear
+        view.autoresizingMask = .flexibleHeight
+        return view
+    }()
+    
+    override var inputAccessoryView: UIView? {
+        return okContentView
+    }
+    
     init(viewModel: InputDataViewModelProtocol) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -26,6 +37,18 @@ final class InputDataViewController: UIViewController, NavigationItemConfigurati
         setupUI()
         setupBindings()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if let cell = tableView.cellForRow(at: IndexPath.init(row: 0, section: 0)) as? InfoFieldTableViewCell {
+            cell.makeFirstResponder()
+        }
+    }
+    
+//    override func viewDidAppear(_ animated: Bool) {
+//        super.viewDidAppear(animated)
+//        updateData()
+//    }
 }
 
 // MARK: - UI
@@ -42,13 +65,17 @@ extension InputDataViewController {
         appointButton.isEnabled = false
         appointButton.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
         view.addSubview(tableView)
-        view.addSubview(appointButton)
+        okContentView.addSubview(appointButton)
         view.updateConstraintsIfNeeded()
     }
     
     private func updateData() {
         title = viewModel.getTitle()
         tableView.reloadData()
+    }
+    
+    private func resignFIrstResponder() {
+        
     }
 }
 
@@ -62,7 +89,7 @@ extension InputDataViewController {
         appointButton.snp.remakeConstraints { make in
             make.left.right.equalToSuperview().inset(16)
             make.height.equalTo(48)
-            make.bottom.equalToSuperview().inset(32)
+            make.bottom.equalToSuperview().inset(16)
         }
         super.updateViewConstraints()
     }
@@ -95,6 +122,7 @@ extension InputDataViewController {
     // Add any actions here, e.g. button selectors
     
     @objc private func didTapButton() {
+        view.endEditing(true)
         let alert = UIAlertController(title: nil, message: "Please wait...", preferredStyle: .alert)
         
         let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
@@ -127,6 +155,9 @@ extension InputDataViewController: UITableViewDataSource {
                 cell.title = data.value
             } else {
                 cell.title = row.value
+            }
+            if indexPath.row == 0 {
+                cell.makeFirstResponder()
             }
         
             cell.textFieldDidChangeCallback = { [weak self] (id,text) in

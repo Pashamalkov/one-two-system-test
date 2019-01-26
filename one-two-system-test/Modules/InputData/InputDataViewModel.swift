@@ -61,11 +61,11 @@ final class InputDataViewModel {
     
     func uploadData(completion: (()->())?) {
         mainService.calculate(parameters: newData) { [weak self] (newOutputs, error) in
+            completion?()
             guard let self = self else { return }
             if let error = error {
                 print(error)
             } else {
-                completion?()
                 var results: [(Put,String)] = []
                 for i in self.outputs {
                     if let newOutput = newOutputs.first(where: { $0.inputId == "\(i.id)"}), let value = newOutput.data?.value  {

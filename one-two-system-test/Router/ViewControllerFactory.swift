@@ -26,7 +26,7 @@ class ViewControllerFactory {
     }
     
     private func createRequestManager() -> RequestManager {
-        let requestManager = RequestManager(host: "http://81.195.151.70:8000/api/")
+        let requestManager = RequestManager(host: SystemConstsants.baseURL)
         return requestManager
     }
 }

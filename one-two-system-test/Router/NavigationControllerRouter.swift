@@ -15,7 +15,6 @@ protocol NavigationRouterProtocol: class {
 
 class NavigationControllerRouter: NavigationRouterProtocol {
     
-    
     var navigationController: UINavigationController = UINavigationController()
     private(set) var viewControllerFactory: ViewControllerFactory
     
@@ -24,11 +23,11 @@ class NavigationControllerRouter: NavigationRouterProtocol {
         navigationController = UINavigationController(rootViewController: viewControllerFactory.configureViewControllerWithType(.inputData, navigationRouter: self))
         navigationController.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         navigationController.navigationBar.shadowImage = UIImage()
-        navigationController.navigationBar.isTranslucent = true
-        navigationController.view.backgroundColor = UIColor.clear
+        UINavigationBar.appearance().backgroundColor = UIColor.white
+        if let statusBarView = UIApplication.shared.value(forKeyPath: "statusBarWindow.statusBar") as? UIView {
+            statusBarView.backgroundColor = UIColor.white
+        }
     }
-    
-    
     
     func performTransitionToController(with viewControllerType: ViewControllerType) {
         

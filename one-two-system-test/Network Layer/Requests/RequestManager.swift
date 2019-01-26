@@ -46,17 +46,6 @@ enum FetchRequestResult<T> {
 class RequestManager {
     private let host: String
     
-    private lazy var versionParameters: [String: Any] = {
-        let parameters: [String: Any] = [:
-//            "version": SystemConstants.methods.appVersion(),
-//            "os": "ios",
-//            "type": "client",
-//            "device": SDiOSVersion.deviceNameString(),
-//            "osVersion": UIDevice.current.systemVersion,
-            ]
-        return parameters
-    }()
-    
     let arrayUrlsNotNeedToken = ["auth","/registration"]
     
     // MARK: - Initialization
@@ -65,9 +54,6 @@ class RequestManager {
     }
     
     let almgr : Alamofire.SessionManager = {
-        // FIXME: REMOVE BEFORE RELEASE
-        // Also remove NSAllowsArbitraryLoads: YES in Info.plist
-        // Create the server trust policies
         let serverTrustPolicies: [String: ServerTrustPolicy] = [
             "81.195.151.70:8000": .disableEvaluation
         ]
@@ -126,17 +112,14 @@ extension RequestManager: RequestManagerCodable {
             headers: httpHeaders)
         
         return request.responseDecodableObject(keyPath: keyPath, decoder: decoder) { (response: DataResponse<Result>) in
-            //            self.networkActivityIndicatorManager.removeActivity()
             
             switch response.result {
             case let .success(value):
                 completion?(CodableRequestResult.success(value))
             case let .failure(error):
-                //                Logger.log(error: error, description: "Request \(requestPath) finished with error")
                 completion?(CodableRequestResult.failure(error))
             }
         }
-        
     }
 }
 
@@ -187,10 +170,6 @@ extension RequestManager {
     func getConfiguredRequestParameters(_ parameters: [String: Any]?) -> [String: Any] {
         var finalParameters: [String: Any] = parameters ?? [:]
         finalParameters["dir_id"] = "124472"
-//        finalParameters["application"] = versionParameters // set application version parameters
-//        if let userToken = loginManager?.loginStorage.token {
-//            finalParameters["token"] = userToken // set user token
-//        }
         return finalParameters
     }
     

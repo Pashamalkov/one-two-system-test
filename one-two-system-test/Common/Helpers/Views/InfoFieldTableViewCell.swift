@@ -177,10 +177,10 @@ extension InfoFieldTableViewCell: UITextFieldDelegate {
         return true
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return textFieldShouldReturnCallback?(fieldId) ?? true
-    }
+//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+//        textField.resignFirstResponder()
+//        return textFieldShouldReturnCallback?(fieldId) ?? true
+//    }
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         title = textField.text ?? ""
