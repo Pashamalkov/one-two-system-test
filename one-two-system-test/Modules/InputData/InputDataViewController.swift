@@ -95,7 +95,20 @@ extension InputDataViewController {
     // Add any actions here, e.g. button selectors
     
     @objc private func didTapButton() {
-        viewModel.uploadData()
+        let alert = UIAlertController(title: nil, message: "Please wait...", preferredStyle: .alert)
+        
+        let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+        loadingIndicator.hidesWhenStopped = true
+        loadingIndicator.activityIndicatorViewStyle = UIActivityIndicatorView.Style.gray
+        loadingIndicator.startAnimating();
+        
+        alert.view.addSubview(loadingIndicator)
+        present(alert, animated: true, completion: nil)
+        
+        viewModel.uploadData(completion: { [weak self] in
+            guard let self = self else { return }
+            self.dismiss(animated: false, completion: nil)
+        })
     }
 }
 

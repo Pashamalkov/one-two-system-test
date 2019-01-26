@@ -16,7 +16,6 @@ protocol NetworkManagerProtocol {
     func makeGetRequest(_ path: String, parameters: [String:AnyObject]?, completedBlock:@escaping RequestManagerCompletedBlock) -> Alamofire.Request?
     func makeDeleteRequest(_ path: String, parameters: [String:AnyObject]?, completedBlock:@escaping RequestManagerCompletedBlock) -> Alamofire.Request?
     func makePostRequest(_ path: String, parameters: [String:AnyObject]?, completedBlock:@escaping RequestManagerCompletedBlock) -> Alamofire.Request?
-    func makePostPhotoRequest(_ path: String, nameImageParameter: String, data: Data?, format: String, parameters: [String:AnyObject]?, completedBlock: @escaping ((Bool,JSON?) -> Void))
 }
 
 
@@ -160,65 +159,11 @@ extension RequestManager {
         return makeRequest(.post, path: path, parameters: parameters, completedBlock: completedBlock)
     }
     
-    func makePostPhotoRequest(_ path: String, nameImageParameter: String, data: Data?, format: String, parameters: [String:AnyObject]?, completedBlock: @escaping ((Bool,JSON?) -> Void)) {
-        makeRequestSendImage(.post , nameImageParameter: nameImageParameter, data: data, format: format, path: path, parameters: parameters, completedBlock: completedBlock)
-    }
-    
-    fileprivate func makeRequestSendImage(_ method: HTTPMethod, nameImageParameter: String, data: Data?, format: String, path: String, parameters: [String:AnyObject]?, completedBlock: @escaping ((Bool,JSON?) -> Void)) {
-        
-        let URL = "\(host)\(path)"
-        
-        var httpHeaders = applicationHeaders()
-        httpHeaders["Content-Type"] = "multipart/form-data"
-        
-        if let unwrapData = data {
-            
-            Alamofire.upload(multipartFormData: { (multipartFormData) in
-                switch format {
-                case "png":
-                    multipartFormData.append(unwrapData, withName: nameImageParameter, fileName: "\(nameImageParameter).\(format)", mimeType: "image/png")
-                case "pdf","xls","xlsm","xlsx","docx","doc":
-                    multipartFormData.append(unwrapData, withName: "image", fileName: "\(nameImageParameter).\(format)", mimeType: "multipart/form-data")
-                default:
-                    break
-                }
-                
-                for (key, value) in self.getConfiguredRequestParameters(parameters) {
-                    if value is String || value is Int || value is Int64 {
-                        multipartFormData.append("\(value)".data(using: String.Encoding.utf8)!, withName: key)
-                    }
-                }
-            }, usingThreshold: SessionManager.multipartFormDataEncodingMemoryThreshold,
-               to: URL,
-               method: method,
-               headers: httpHeaders,
-               encodingCompletion: { (encodingResult) in
-                switch encodingResult {
-                case .success(let upload, _, _):
-                    upload.responseJSON { response in
-                        if let jsonDictionary = response.result.value {
-                            let json = JSON(jsonDictionary)
-                            if json["success"].boolValue == false {
-                                completedBlock(false, nil)
-                            } else {
-                                completedBlock(true, json)
-                            }
-                        }
-                    }
-                case .failure(let encodingError):
-                    print(encodingError)
-                }
-            })
-            
-        } else {
-            completedBlock(false, nil)
-        }
-    }
-    
     func makeRequest(_ method: HTTPMethod, path: String, parameters: [String:AnyObject]?, completedBlock: @escaping RequestManagerCompletedBlock) -> Alamofire.Request? {
         
         var httpHeaders = applicationHeaders()
         httpHeaders["Content-Type"] = "application/json"
+        httpHeaders["XAUTHSUBJECT"] = "80614a86-4b9f-4df7-9e91-7500e2a239ed"
         var encoding: ParameterEncoding
         switch method {
         case .get:

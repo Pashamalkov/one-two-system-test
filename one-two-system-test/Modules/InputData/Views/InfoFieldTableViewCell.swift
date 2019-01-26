@@ -20,11 +20,6 @@ class InfoFieldTableViewCell: UITableViewCell {
     
     private var textField = UITextField()
     private var cellNameLabel = UILabel()
-//    var type: InfoFieldsTableView.InfoFieldType = .name {
-//        didSet {
-//            changeTypeDependOnText()
-//        }
-//    }
     var fieldId: Int = 0
     
     var title: String {
@@ -46,6 +41,8 @@ class InfoFieldTableViewCell: UITableViewCell {
             title = textField.text ?? ""
         }
     }
+    
+    var isEditable: Bool = true
     
     var textPosition: UITextPosition?
     
@@ -98,14 +95,14 @@ class InfoFieldTableViewCell: UITableViewCell {
     private func setType(_ type: InfoFieldType) {
         switch type {
         case .fill:
-            cellNameLabel.attributedText = NSAttributedString(string: cellName, attributes: [
+            cellNameLabel.attributedText = NSAttributedString(string: cellName.capitalized, attributes: [
                 NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12),
                 NSAttributedString.Key.kern: 0.2,
                 NSAttributedString.Key.foregroundColor: UIColor.grayColor
                 ])
         case .empty:
             cellNameLabel.text = ""
-            textField.attributedPlaceholder = NSAttributedString(string: cellName, attributes: [
+            textField.attributedPlaceholder = NSAttributedString(string: cellName.capitalized, attributes: [
                 NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16),
                 NSAttributedString.Key.kern: 0.2,
                 NSAttributedString.Key.foregroundColor: UIColor.grayColor
@@ -147,7 +144,7 @@ class InfoFieldTableViewCell: UITableViewCell {
 extension InfoFieldTableViewCell: UITextFieldDelegate {
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        if !isEnabled {
+        if !isEnabled || !isEditable {
             return false
         }
         changeTypeDependOnText()

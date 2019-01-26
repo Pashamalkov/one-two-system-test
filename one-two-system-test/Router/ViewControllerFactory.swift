@@ -10,15 +10,18 @@ import UIKit
 
 enum ViewControllerType {
     case inputData
+    case outputData(_ data: [(Put,String)])
 }
 
 class ViewControllerFactory {
     func configureViewControllerWithType(_ type: ViewControllerType, navigationRouter: NavigationRouterProtocol) -> UIViewController {
         let requestManager = createRequestManager()
-        let mainService = MainService(requestManager: requestManager)
+        let mainService = MainService(requestManager: requestManager, parser: MainParser())
         switch type {
         case .inputData:
-            return InputDataViewController.init(viewModel: InputDataViewModel.init(router: navigationRouter, mainService: mainService))
+            return InputDataViewController(viewModel: InputDataViewModel(router: navigationRouter, mainService: mainService))
+        case .outputData(let data):
+            return OutputDataViewController(viewModel: OutputDataViewModel(router: navigationRouter, data: data))
         }
     }
     
