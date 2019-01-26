@@ -13,121 +13,123 @@ protocol InputDataModelProtocol {
 }
 
 struct InputDataModel: Codable, InputDataModelProtocol {
-    let createdAt: String
-    let camZoom, camZ: Double
-    let description: String
-    let camAz: Double
-    let productionDate: Int
-    let updatedAt: String
-    let camAy: Double
-    let price, calculatedAt: String
-    let id: Int
-    let thumbnail: String
-    let ik: Ik
-    let camAx: Double
-    let arMode: Int
-    let directory: Directory
-    let order: Int
-    let camY: Double
+    let price: String
     let original: Int
+    let createdAt: String
+    let camAz: Double
+    let calculatedAt: String
+    let camAy: Double
+    let ik: Ik
+    let arMode: Int
+    let camAx, camY: Double
+    let description: String
+    let order: Int
+    let camZoom: Double
+    let thumbnail: String
+    let id: Int
+    let camZ: Double
+    let directory: Directory
+    let productionDate: Int
     let camX: Double
+    let updatedAt: String
     
     enum CodingKeys: String, CodingKey {
+        case price, original
         case createdAt = "created_at"
-        case camZoom = "cam_zoom"
-        case camZ = "cam_z"
-        case description
         case camAz = "cam_az"
-        case productionDate = "production_date"
-        case updatedAt = "updated_at"
-        case camAy = "cam_ay"
-        case price
         case calculatedAt = "calculated_at"
-        case id, thumbnail, ik
-        case camAx = "cam_ax"
+        case camAy = "cam_ay"
+        case ik
         case arMode = "ar_mode"
-        case directory, order
+        case camAx = "cam_ax"
         case camY = "cam_y"
-        case original
+        case description, order
+        case camZoom = "cam_zoom"
+        case thumbnail, id
+        case camZ = "cam_z"
+        case directory
+        case productionDate = "production_date"
         case camX = "cam_x"
+        case updatedAt = "updated_at"
     }
 }
 
 struct Directory: Codable {
     let group: Int
     let name: String
-    let parent, localParent, localID, type: Int
-    let id: Int
+    let localParent, id, type, localID: Int
+    let parent: Int
     let icon: String
     
     enum CodingKeys: String, CodingKey {
-        case group, name, parent
+        case group, name
         case localParent = "local_parent"
+        case id, type
         case localID = "local_id"
-        case type, id, icon
+        case parent, icon
     }
 }
 
 struct Ik: Codable {
-    let inputs: [Put]
-    let inputNameCol, sheet, outputValueCol, outputOrderCol: String
-    let outputs: [Put]
+    let localIkData, inputOrderCol, sheet, inputIDCol: String
     let outputStartRow: Int
-    let useLocal: Bool
-    let inputOrderCol, inputIDCol: String
+    let inputNameCol, inputValueCol: String
+    let inputs: [Put]
+    let outputOrderCol: String
     let inputStartRow: Int
-    let outputIDCol: String
-    let directory: Directory
-    let inputValueCol, workbook, path, outputNameCol: String
+    let useLocal: Bool
+    let outputNameCol: String
+    let outputs: [Put]
+    let path, outputValueCol, outputIDCol: String
     let id: Int
-    let localIkData: String
+    let directory: Directory
+    let workbook: String
     
     enum CodingKeys: String, CodingKey {
-        case inputs
-        case inputNameCol = "input_name_col"
-        case sheet
-        case outputValueCol = "output_value_col"
-        case outputOrderCol = "output_order_col"
-        case outputs
-        case outputStartRow = "output_start_row"
-        case useLocal = "use_local"
-        case inputOrderCol = "input_order_col"
-        case inputIDCol = "input_id_col"
-        case inputStartRow = "input_start_row"
-        case outputIDCol = "output_id_col"
-        case directory
-        case inputValueCol = "input_value_col"
-        case workbook, path
-        case outputNameCol = "output_name_col"
-        case id
         case localIkData = "local_ik_data"
+        case inputOrderCol = "input_order_col"
+        case sheet
+        case inputIDCol = "input_id_col"
+        case outputStartRow = "output_start_row"
+        case inputNameCol = "input_name_col"
+        case inputValueCol = "input_value_col"
+        case inputs
+        case outputOrderCol = "output_order_col"
+        case inputStartRow = "input_start_row"
+        case useLocal = "use_local"
+        case outputNameCol = "output_name_col"
+        case outputs, path
+        case outputValueCol = "output_value_col"
+        case outputIDCol = "output_id_col"
+        case id, directory, workbook
     }
 }
 
 struct Put: Codable {
-    let nameCell, idCell, value: String
-    let id, dirID: Int
-    let valueCell, valueID: String
+    let valueID: String
+    let dirID: Int
     let isUsed: Bool
-    let directory: Directory
-    let paramName: ParamName
+    let orderCell, idCell: String
     let order: Int
-    let type, orderCell: String
+    let valueCell, nameCell: String
+    let paramName: ParamName
+    let value: String
+    let id: Int
+    let directory: Directory
+    let type: String
     let content: [Directory]?
     
     enum CodingKeys: String, CodingKey {
-        case nameCell = "name_cell"
-        case idCell = "id_cell"
-        case value, id
-        case dirID = "dir_id"
-        case valueCell = "value_cell"
         case valueID = "value_id"
+        case dirID = "dir_id"
         case isUsed = "is_used"
-        case directory
-        case paramName = "param_name"
-        case order, type
         case orderCell = "order_cell"
-        case content
+        case idCell = "id_cell"
+        case order
+        case valueCell = "value_cell"
+        case nameCell = "name_cell"
+        case paramName = "param_name"
+        case value, id, directory, type, content
     }
 }
 

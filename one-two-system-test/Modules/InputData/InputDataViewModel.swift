@@ -9,7 +9,11 @@ import UIKit
 
 protocol InputDataViewModelProtocol {
     func getTitle() -> String
+    func setData(id: Int, text: String)
+    func uploadData()
     var dataUpdateCallback: (()->())? { get set }
+    var rows: [Put] { get }
+    var newData: [OutputData] { get }
 }
 
 final class InputDataViewModel {
@@ -17,6 +21,9 @@ final class InputDataViewModel {
     private let mainService: MainServiceProtocol
     private var fullProject: InputDataModelProtocol?
     var dataUpdateCallback: (()->())?
+    
+    var rows: [Put] = []
+    var newData: [OutputData] = []
     
     init(router: NavigationRouterProtocol, mainService: MainServiceProtocol) {
         self.router = router
@@ -30,10 +37,30 @@ final class InputDataViewModel {
                 print("ERROR: \(error)")
             }
         }
+        
     }
     
     private func updateData() {
+        rows = fullProject?.ik.inputs.filter({ $0.directory.name.lowercased() == "ширина" || $0.directory.name.lowercased() == "высота" }) ?? []
+        newData = []
+        for row in rows {
+            let outputValue = OutputValue.init(id: "\(-1)", value: row.value)
+            newData.append(OutputData(inputId: "\(row.id)", data: outputValue))
+        }
         dataUpdateCallback?()
+    }
+    
+    func setData(id: Int, text: String) {
+        if var index = newData.firstIndex(where: { $0.inputId == "\(id)" }) {
+            let outputValue = OutputValue.init(id: "\(-1)", value: text)
+            newData[index].data = outputValue
+        }
+    }
+    
+    func uploadData() {
+        mainService.calculate(parameters: newData) { (input, error) in
+            
+        }
     }
 }
 

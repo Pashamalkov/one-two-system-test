@@ -118,7 +118,7 @@ extension RequestManager: RequestManagerCodable {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         
-        let requestPath = "\(host)\(path)/"
+        let requestPath = "\(host)\(path)"
         let request = almgr.request(
             requestPath,
             method: method,
